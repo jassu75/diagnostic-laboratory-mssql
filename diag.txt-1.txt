@@ -1,0 +1,135 @@
+PATIENT
+
+create table patients
+(patient_id varchar(15) not null  primary key check(patient_id like 'ST2PT%[0-9]%'),
+PFname varchar(20) not null check(PFname not like '%[^A-Z]%'),
+PInitials varchar(3) check(PInitials not like '%[^A-Z]%'),
+PLname varchar(20) check(PLname not like '%[^A-Z]%'),
+DOB date not null,
+house_no decimal(4),
+street_address varchar(100) not null,
+city varchar(30) not null check(city not like '%[^A-Z]%'),
+state varchar(30) not null check(state not like '%[^A-Z]%'),
+pincode decimal(6) not null check(pincode like '[1-9][0-9][0-9][0-9][0-9][0-9]'),
+gender char(1) not null check(gender in ('m','f','o')),
+phno decimal(10) not null unique check(phno like '[1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+doc_id varchar(15) references Reference_doctor(doc_id) on delete set NULL
+)
+
+REFERENCE DOCTOR
+
+create table Reference_Doctor
+(
+doc_id varchar(15) not null primary key check(doc_id like 'ST2DCT%[0-9]%'),
+DFname varchar(20) not null check(DFname not like '%[^A-Z]%'),
+DInitials varchar(3) check(DInitials not like '%[^A-Z]%'),
+DLname varchar(20) check(DLname not like '%[^A-Z]%'),
+Comission_in_percent decimal(2) not null ,
+phno decimal(10) not null unique check(phno like '[1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+hospital varchar(20) not null check(hospital not like '%[^A-Z]%'),
+Job_Title varchar(20) not null check(Job_Title not like '%[^A-Z]%'),
+)
+
+APPOINTMENTS
+
+create table appointments
+(
+Date date not null ,
+Time time not null ,
+Test_name varchar(20) check(Test_name not like '%[^A-Z]%'),
+PFname varchar(20) not null check(PFname not like '%[^A-Z]%'),
+PInitials varchar(3)  check(PInitials not like '%[^A-Z]%'),
+PLname varchar(20)  check(PLname not like '%[^A-Z]%'),
+primary key(Date,Time),
+Patient_id varchar(15) references patients(Patient_id) on delete cascade
+)
+
+Staff
+
+create table staff
+(staff_id varchar(15) not null  primary key check(staff_id like 'ST2STF%[0-9]%'),
+SFname varchar(20) not null check(SFname not like '%[^A-Z]%'),
+SInitials varchar(3) check(SInitials not like '%[^A-Z]%'),
+SLname varchar(20) check(SLname not like '%[^A-Z]%'),
+DOB date not null,
+house_no decimal(4),
+street_address varchar(100) not null,
+city varchar(30) not null check(city not like '%[^A-Z]%'),
+state varchar(30) not null check(state not like '%[^A-Z]%'),
+pincode decimal(6) not null check(pincode like '[1-9][0-9][0-9][0-9][0-9][0-9]'),
+phno decimal(10) not null unique check(phno like '[1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+Job_Title varchar(20) not null check(Job_Title not like '%[^A-Z]%'),
+Salary decimal(7)
+)
+
+SANMPLE 
+
+create table sample
+(sample_id varchar(15) not null  primary key check(sample_id like 'ST2SMPL%[0-9]%'),
+sample_name varchar(20) not null check(sample_name not like '%[^A-Z]%'),
+patient_name varchar(20) not null check(patient_name not like '%[^A-Z]%'),
+staff_id varchar(15) references staff(staff_id) on delete set NULL,
+patient_id varchar(15) references patients(patient_id) on delete cascade
+)
+
+TEST
+
+create table Test
+(test_id varchar(15) not null  primary key check(test_id like 'ST2TST%[0-9]%'),
+test_name varchar(20) not null check(test_name not like '%[^A-Z]%'),
+test_results varchar(1000) not null,
+staff_id varchar(15) references staff(staff_id) on delete set NULL,
+sample_id varchar(15) references sample(sample_id) on delete cascade
+)
+
+MEDICAL RECORD
+
+create table medical_record
+(
+record_id int  identity(1,1) not null primary key,
+patient_id varchar(15) references patients(patient_id) on delete cascade,
+test_id varchar(15) not null unique check(test_id like 'ST2TST%[0-9]%'),
+Result varchar(1000), 
+test_name varchar(20) not null check(test_name not like '%[^A-Z]%'),
+)
+
+
+TRIGGER MED RECORD
+
+create trigger med_rec on Test
+after insert
+as
+begin
+
+set nocount on
+declare @Sample_id varchar(15)
+declare @Patient_id varchar(15)
+declare @Test_id varchar(15)
+declare @Test_results varchar(1000)
+declare @Test_name varchar(20)
+
+select @Sample_id = INSERTED.sample_id
+from INSERTED
+select @Patient_id = (select patient_id 
+             from sample
+			 where sample_id=@Sample_id);
+
+select @Test_id = INSERTED.test_id
+from INSERTED
+
+select @Test_results=INSERTED.test_results
+from INSERTED
+
+select @Test_name=INSERTED.test_name
+from INSERTED
+
+insert into medical_record values(@Patient_id,@Test_id,@Test_results,@Test_name)
+end
+go
+
+
+
+
+
+
+
