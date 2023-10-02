@@ -1,4 +1,4 @@
-PATIENT
+--PATIENT
 
 create table patients
 (patient_id varchar(15) not null  primary key check(patient_id like 'ST2PT%[0-9]%'),
@@ -16,7 +16,7 @@ phno decimal(10) not null unique check(phno like '[1-9][0-9][0-9][0-9][0-9][0-9]
 doc_id varchar(15) references Reference_doctor(doc_id) on delete set NULL
 )
 
-REFERENCE DOCTOR
+--REFERENCE DOCTOR
 
 create table Reference_Doctor
 (
@@ -30,7 +30,7 @@ hospital varchar(20) not null check(hospital not like '%[^A-Z]%'),
 Job_Title varchar(20) not null check(Job_Title not like '%[^A-Z]%'),
 )
 
-APPOINTMENTS
+--APPOINTMENTS
 
 create table appointments
 (
@@ -44,7 +44,7 @@ primary key(Date,Time),
 Patient_id varchar(15) references patients(Patient_id) on delete cascade
 )
 
-Staff
+--Staff
 
 create table staff
 (staff_id varchar(15) not null  primary key check(staff_id like 'ST2STF%[0-9]%'),
@@ -62,7 +62,7 @@ Job_Title varchar(20) not null check(Job_Title not like '%[^A-Z]%'),
 Salary decimal(7)
 )
 
-SANMPLE 
+--SANMPLE 
 
 create table sample
 (sample_id varchar(15) not null  primary key check(sample_id like 'ST2SMPL%[0-9]%'),
@@ -72,7 +72,7 @@ staff_id varchar(15) references staff(staff_id) on delete set NULL,
 patient_id varchar(15) references patients(patient_id) on delete cascade
 )
 
-TEST
+--TEST
 
 create table Test
 (test_id varchar(15) not null  primary key check(test_id like 'ST2TST%[0-9]%'),
@@ -82,7 +82,7 @@ staff_id varchar(15) references staff(staff_id) on delete set NULL,
 sample_id varchar(15) references sample(sample_id) on delete cascade
 )
 
-MEDICAL RECORD
+--MEDICAL RECORD
 
 create table medical_record
 (
@@ -93,39 +93,6 @@ Result varchar(1000),
 test_name varchar(20) not null check(test_name not like '%[^A-Z]%'),
 )
 
-
-TRIGGER MED RECORD
-
-create trigger med_rec on Test
-after insert
-as
-begin
-
-set nocount on
-declare @Sample_id varchar(15)
-declare @Patient_id varchar(15)
-declare @Test_id varchar(15)
-declare @Test_results varchar(1000)
-declare @Test_name varchar(20)
-
-select @Sample_id = INSERTED.sample_id
-from INSERTED
-select @Patient_id = (select patient_id 
-             from sample
-			 where sample_id=@Sample_id);
-
-select @Test_id = INSERTED.test_id
-from INSERTED
-
-select @Test_results=INSERTED.test_results
-from INSERTED
-
-select @Test_name=INSERTED.test_name
-from INSERTED
-
-insert into medical_record values(@Patient_id,@Test_id,@Test_results,@Test_name)
-end
-go
 
 
 
