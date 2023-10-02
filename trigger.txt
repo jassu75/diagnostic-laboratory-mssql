@@ -1,0 +1,34 @@
+
+
+--TRIGGER MED RECORD
+
+create trigger med_rec on Test
+after insert
+as
+begin
+
+set nocount on
+declare @Sample_id varchar(15)
+declare @Patient_id varchar(15)
+declare @Test_id varchar(15)
+declare @Test_results varchar(1000)
+declare @Test_name varchar(20)
+
+select @Sample_id = INSERTED.sample_id
+from INSERTED
+select @Patient_id = (select patient_id 
+             from sample
+			 where sample_id=@Sample_id);
+
+select @Test_id = INSERTED.test_id
+from INSERTED
+
+select @Test_results=INSERTED.test_results
+from INSERTED
+
+select @Test_name=INSERTED.test_name
+from INSERTED
+
+insert into medical_record values(@Patient_id,@Test_id,@Test_results,@Test_name)
+end
+go
